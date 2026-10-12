@@ -1,0 +1,11 @@
+{
+    "dataHora": "2026-10-12T13:46:22.523Z",
+    "metode": "POST",
+    "ruta": "/",
+    "client": "/127.0.0.1:38204",
+    "jsonValid": true,
+    "cos": {
+        "nom": "Núria Puig",
+        "anyNaixement": 1985
+    }
+}

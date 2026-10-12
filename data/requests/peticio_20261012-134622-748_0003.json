@@ -1,0 +1,8 @@
+{
+    "dataHora": "2026-10-12T13:46:22.748Z",
+    "metode": "POST",
+    "ruta": "/",
+    "client": "/127.0.0.1:38218",
+    "jsonValid": false,
+    "cos": "això no és json"
+}

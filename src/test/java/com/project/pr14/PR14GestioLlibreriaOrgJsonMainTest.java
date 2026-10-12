@@ -9,6 +9,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -101,5 +102,33 @@ public class PR14GestioLlibreriaOrgJsonMainTest {
 
         JSONObject llibre3 = jsonArray.getJSONObject(2);
         assertEquals("Històries de la ciutat", llibre3.getString("titol"), "El títol del tercer llibre hauria de ser 'Històries de la ciutat' al fitxer de sortida.");
+    }
+
+    @Test
+    void testCarregarLlibresFitxerInexistent() {
+        PR14GestioLlibreriaOrgJsonMain appSenseFitxer = new PR14GestioLlibreriaOrgJsonMain(new File(tempDir, "no_existeix.json"));
+        List<Llibre> llibres = assertDoesNotThrow(appSenseFitxer::carregarLlibres,
+                "Si el fitxer no existeix, l'error s'ha de gestionar dins del mètode.");
+        assertNull(llibres, "Si el fitxer no existeix, carregarLlibres() ha de retornar null.");
+    }
+
+    @Test
+    void testCarregarLlibresJsonMalFormat() throws IOException {
+        File fitxerErroni = new File(tempDir, "llibres_erronis.json");
+        Files.writeString(fitxerErroni.toPath(), "[{\"id\": 1, \"titol\": ", StandardCharsets.UTF_8);
+        PR14GestioLlibreriaOrgJsonMain appErroni = new PR14GestioLlibreriaOrgJsonMain(fitxerErroni);
+        List<Llibre> llibres = assertDoesNotThrow(appErroni::carregarLlibres,
+                "Si el JSON no és vàlid, l'error s'ha de gestionar dins del mètode.");
+        assertNull(llibres, "Si el JSON no és vàlid, carregarLlibres() ha de retornar null.");
+    }
+
+    @Test
+    void testProcessarFitxerNoModificaEntrada() throws IOException {
+        String abans = Files.readString(tempFile.toPath(), StandardCharsets.UTF_8);
+        app.processarFitxer();
+
+        // El fitxer d'entrada no s'ha de modificar: els canvis es guarden en un fitxer nou
+        assertEquals(abans, Files.readString(tempFile.toPath(), StandardCharsets.UTF_8), "El fitxer d'entrada no s'ha de modificar.");
+        assertTrue(new File(tempDir, "llibres_output_json_org.json").exists(), "processarFitxer() hauria de generar el fitxer de sortida.");
     }
 }

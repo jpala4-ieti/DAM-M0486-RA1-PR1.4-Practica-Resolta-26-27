@@ -1,23 +1,28 @@
 package com.project.pr14;
 
 import com.project.objectes.Llibre;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.Iterator;
 
 /**
- * Classe principal que gestiona la lectura i el processament de fitxers JSON per obtenir dades de llibres.
+ * Classe principal que gestiona la lectura i el processament de fitxers JSON per obtenir dades de llibres
+ * utilitzant Jackson 3.
  */
 public class PR14GestioLlibreriaJacksonMain {
 
+    private static final String NOM_FITXER_SORTIDA = "llibres_output_jackson.json";
+
     private final File dataFile;
 
+    // El mapper és immutable i segur entre fils: es crea una sola vegada i es reutilitza
+    private final JsonMapper mapper = JsonMapper.builder().build();
+
     /**
-     * Constructor de la classe PR14GestioLlibreriaMain.
+     * Constructor de la classe PR14GestioLlibreriaJacksonMain.
      *
      * @param dataFile Fitxer on es troben els llibres.
      */
@@ -46,15 +51,20 @@ public class PR14GestioLlibreriaJacksonMain {
 
     /**
      * Carrega els llibres des del fitxer JSON.
+     * Si el fitxer no existeix o no conté un JSON vàlid, mostra un missatge d'error i retorna null
+     * (no ha de propagar cap excepció).
      *
      * @return Llista de llibres o null si hi ha hagut un error en la lectura.
      */
     public List<Llibre> carregarLlibres() {
         try {
-            ObjectMapper mapper = new ObjectMapper();
+            // Vinculació de dades: l'array JSON es converteix directament en una List<Llibre>.
+            // TypeReference conserva el tipus genèric complet (List<Llibre>), que Java esborra en temps d'execució.
             return mapper.readValue(dataFile, new TypeReference<List<Llibre>>() {});
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (JacksonException e) {
+            // JacksonException és no comprovada: inclou fitxer inexistent (JacksonIOException),
+            // JSON mal format (StreamReadException) i tipus incorrectes (DatabindException)
+            System.err.println("Error en llegir " + dataFile.getName() + ": " + e.getOriginalMessage());
             return null;
         }
     }
@@ -91,26 +101,23 @@ public class PR14GestioLlibreriaJacksonMain {
      * @param id Identificador del llibre a esborrar.
      */
     public void esborrarLlibre(List<Llibre> llibres, int id) {
-        Iterator<Llibre> iterator = llibres.iterator();
-        while (iterator.hasNext()) {
-            if (iterator.next().getId() == id) {
-                iterator.remove();
-            }
-        }
+        llibres.removeIf(llibre -> llibre.getId() == id);
     }
 
     /**
-     * Guarda la llista de llibres en un fitxer nou.
+     * Guarda la llista de llibres en un fitxer nou anomenat llibres_output_jackson.json,
+     * dins del mateix directori que el fitxer d'entrada.
      *
      * @param llibres Llista de llibres a guardar.
      */
     public void guardarLlibres(List<Llibre> llibres) {
+        File outputFile = new File(dataFile.getAbsoluteFile().getParentFile(), NOM_FITXER_SORTIDA);
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            File outputFile = new File(dataFile.getParent(), "llibres_output_jackson.json");
+            // Escriptura amb sagnat (pretty printer) per fer el fitxer llegible
             mapper.writerWithDefaultPrettyPrinter().writeValue(outputFile, llibres);
-        } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Llibres guardats a " + outputFile.getPath());
+        } catch (JacksonException e) {
+            System.err.println("Error en guardar " + outputFile.getName() + ": " + e.getOriginalMessage());
         }
     }
 }

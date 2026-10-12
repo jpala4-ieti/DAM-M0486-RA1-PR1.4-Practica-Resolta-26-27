@@ -8,29 +8,47 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 public class ExempleServidor {
 
+    // Ampliació PR1.4: directori on es guarda una còpia de cada petició rebuda
+    private static final Path DIRECTORI_PETICIONS = Path.of("data", "requests");
+
     public static void main(String[] args) {
+        RegistrePeticions registre = new RegistrePeticions(DIRECTORI_PETICIONS);
+
         // Configuració del servidor Undertow
         Undertow server = Undertow.builder()
                 .addHttpListener(8080, "localhost") // Escoltar al port 8080
                 // Ús de BlockingHandler per permetre I/O bloquejant
                 .setHandler(new BlockingHandler(exchange -> {
+                    String metode = exchange.getRequestMethod().toString();
+
+                    // Llegir tot el cos de la petició (pot ser buit, per exemple en un GET)
+                    String requestBody = new String(exchange.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                    System.out.println("Rebuda petició " + metode + ": " + requestBody);
+
+                    // Ampliació PR1.4: cada petició rebuda es guarda com a fitxer JSON a data/requests
+                    try {
+                        Path fitxer = registre.guardarPeticio(metode, exchange.getRequestPath(),
+                                String.valueOf(exchange.getSourceAddress()), requestBody);
+                        System.out.println("Petició guardada a " + fitxer);
+                    } catch (IOException e) {
+                        // Un error en guardar la petició no ha d'impedir respondre al client
+                        System.err.println("No s'ha pogut guardar la petició: " + e.getMessage());
+                    }
+
+                    // Establir l'encapçalament de la resposta
+                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json; charset=UTF-8");
+
                     // Permetre només peticions POST
-                    if (exchange.getRequestMethod().toString().equalsIgnoreCase("POST")) {
-                        // Establir l'encapçalament de la resposta
-                        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-
-                        // Llegir el contingut del cos de la petició
+                    if (metode.equalsIgnoreCase("POST")) {
                         try {
-                            // Llegir tot el cos de la petició
-                            String requestBody = new String(exchange.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-                            System.out.println("Rebut JSON: " + requestBody);
-
                             // Convertir el JSON rebut en un objecte JsonObject
                             try (JsonReader jsonReader = Json.createReader(new StringReader(requestBody))) {
                                 JsonObject personaJson = jsonReader.readObject();
@@ -75,5 +93,6 @@ public class ExempleServidor {
         // Arrencar el servidor
         server.start();
         System.out.println("Servidor en execució a http://localhost:8080");
+        System.out.println("Les peticions es guarden a " + DIRECTORI_PETICIONS.toAbsolutePath());
     }
 }
