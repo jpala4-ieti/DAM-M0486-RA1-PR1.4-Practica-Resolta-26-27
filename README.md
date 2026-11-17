@@ -8,8 +8,8 @@ Solució de la pràctica PR1.4 del mòdul MP0486 Accés a dades (CFGS DAM), dedi
 * `src/main/java/com/project/pr14/PR14GestioLlibreriaJakartaMain.java`: exercici 0 (model d'objectes de Jakarta JSON-P).
 * `src/main/java/com/project/pr14/PR14GestioLlibreriaJacksonMain.java`: exercici 1 (vinculació de dades amb Jackson 3).
 * `src/main/java/com/project/pr14/PR14GestioLlibreriaOrgJsonMain.java`: solució alternativa amb org.json (no forma part de l'enunciat).
-* `src/main/java/com/project/exemples/ExempleServidor.java` i `RegistrePeticions.java`: ampliació (cada petició es guarda com a fitxer JSON a `data/requests`).
-* `doc/memoria.pdf`: memòria model de l'ampliació.
+* `src/main/java/com/project/exemples/ExempleServidor.java` i `RegistrePeticions.java`: exercici 2 (cada petició es guarda com a fitxer JSON a `data/requests`).
+* `doc/memoria.pdf`: memòria model de l'exercici 2.
 * `data/pr14/llibres_output_*.json` i `data/requests/*.json`: fitxers generats en executar la solució.
 
 

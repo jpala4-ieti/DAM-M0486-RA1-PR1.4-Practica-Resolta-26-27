@@ -59,7 +59,8 @@ public class PR14GestioLlibreriaJakartaMain {
      */
     public List<Llibre> carregarLlibres() {
         // try-with-resources: el JsonReader (i el FileReader que conté) es tanquen sempre
-        try (JsonReader jsonReader = Json.createReader(new FileReader(dataFile, StandardCharsets.UTF_8))) {
+        try (JsonReader jsonReader = Json.createReader(
+                new FileReader(dataFile, StandardCharsets.UTF_8))) {
             // Model d'objectes: tot el document es carrega en memòria com un JsonArray
             JsonArray jsonArray = jsonReader.readArray();
 
@@ -76,6 +77,13 @@ public class PR14GestioLlibreriaJakartaMain {
             // IOException: el fitxer no existeix o no es pot llegir
             // JsonException (no comprovada): el contingut no és un JSON vàlid o no és un array
             System.err.println("Error en llegir " + dataFile.getName() + ": " + e.getMessage());
+            return null;
+        } catch (ClassCastException | NullPointerException e) {
+            // El JSON és vàlid però no té l'estructura esperada. JSON-P ho indica així:
+            // ClassCastException si un element no és un objecte o un valor és d'un altre tipus
+            // (per exemple, un id de text), i NullPointerException si falta una clau
+            System.err.println("Error en llegir " + dataFile.getName()
+                    + ": el contingut no és una llista de llibres (id, titol, autor, any).");
             return null;
         }
     }
@@ -132,8 +140,9 @@ public class PR14GestioLlibreriaJakartaMain {
                     .add("any", llibre.getAny()));
         }
 
-        // Fàbrica d'escriptors configurada amb sagnat (pretty printing) per fer el fitxer llegible
-        JsonWriterFactory writerFactory = Json.createWriterFactory(Map.of(JsonGenerator.PRETTY_PRINTING, true));
+        // Fàbrica d'escriptors amb sagnat (pretty printing) per fer el fitxer llegible
+        JsonWriterFactory writerFactory = Json.createWriterFactory(
+                Map.of(JsonGenerator.PRETTY_PRINTING, true));
         Path outputPath = dataFile.getAbsoluteFile().toPath().resolveSibling(NOM_FITXER_SORTIDA);
 
         try (Writer writer = Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8);
@@ -141,7 +150,8 @@ public class PR14GestioLlibreriaJakartaMain {
             jsonWriter.writeArray(arrayBuilder.build());
             System.out.println("Llibres guardats a " + outputPath);
         } catch (IOException | JsonException e) {
-            System.err.println("Error en guardar " + outputPath.getFileName() + ": " + e.getMessage());
+            System.err.println("Error en guardar " + outputPath.getFileName()
+                    + ": " + e.getMessage());
         }
     }
 }

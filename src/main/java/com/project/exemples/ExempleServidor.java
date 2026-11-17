@@ -16,7 +16,7 @@ import java.nio.file.Path;
 
 public class ExempleServidor {
 
-    // Ampliació PR1.4: directori on es guarda una còpia de cada petició rebuda
+    // Exercici 2 de la PR1.4: directori on es guarda una còpia de cada petició rebuda
     private static final Path DIRECTORI_PETICIONS = Path.of("data", "requests");
 
     public static void main(String[] args) {
@@ -33,7 +33,7 @@ public class ExempleServidor {
                     String requestBody = new String(exchange.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
                     System.out.println("Rebuda petició " + metode + ": " + requestBody);
 
-                    // Ampliació PR1.4: cada petició rebuda es guarda com a fitxer JSON a data/requests
+                    // Exercici 2 de la PR1.4: cada petició rebuda es guarda com a fitxer JSON a data/requests
                     try {
                         Path fitxer = registre.guardarPeticio(metode, exchange.getRequestPath(),
                                 String.valueOf(exchange.getSourceAddress()), requestBody);

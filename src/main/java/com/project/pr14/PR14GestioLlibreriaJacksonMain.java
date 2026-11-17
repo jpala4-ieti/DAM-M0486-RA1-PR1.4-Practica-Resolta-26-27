@@ -59,12 +59,14 @@ public class PR14GestioLlibreriaJacksonMain {
     public List<Llibre> carregarLlibres() {
         try {
             // Vinculació de dades: l'array JSON es converteix directament en una List<Llibre>.
-            // TypeReference conserva el tipus genèric complet (List<Llibre>), que Java esborra en temps d'execució.
+            // TypeReference conserva el tipus genèric complet (List<Llibre>), que Java esborra
+            // en temps d'execució.
             return mapper.readValue(dataFile, new TypeReference<List<Llibre>>() {});
         } catch (JacksonException e) {
             // JacksonException és no comprovada: inclou fitxer inexistent (JacksonIOException),
             // JSON mal format (StreamReadException) i tipus incorrectes (DatabindException)
-            System.err.println("Error en llegir " + dataFile.getName() + ": " + e.getOriginalMessage());
+            System.err.println("Error en llegir " + dataFile.getName()
+                    + ": " + e.getOriginalMessage());
             return null;
         }
     }
@@ -117,7 +119,8 @@ public class PR14GestioLlibreriaJacksonMain {
             mapper.writerWithDefaultPrettyPrinter().writeValue(outputFile, llibres);
             System.out.println("Llibres guardats a " + outputFile.getPath());
         } catch (JacksonException e) {
-            System.err.println("Error en guardar " + outputFile.getName() + ": " + e.getOriginalMessage());
+            System.err.println("Error en guardar " + outputFile.getName()
+                    + ": " + e.getOriginalMessage());
         }
     }
 }

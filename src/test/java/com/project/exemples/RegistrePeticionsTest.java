@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests de l'ampliació: emmagatzematge de les peticions rebudes pel servidor.
+ * Tests de l'exercici 2: emmagatzematge de les peticions rebudes pel servidor.
  */
 public class RegistrePeticionsTest {
 
@@ -55,6 +55,17 @@ public class RegistrePeticionsTest {
         JsonObject peticio = llegir(fitxer);
         assertFalse(peticio.getBoolean("jsonValid"));
         assertEquals("això no és JSON", peticio.getString("cos"));
+    }
+
+    @Test
+    void testCosAmbTextDarrereDelJsonEsGuardaSencer() throws IOException {
+        // Un JSON seguit de més text no és un JSON vàlid: s'ha de guardar tot el cos com a text
+        RegistrePeticions registre = new RegistrePeticions(tempDir);
+        for (String cos : new String[] {"{\"a\":1} xyz", "{\"a\":1}{\"b\":2}"}) {
+            JsonObject peticio = llegir(registre.guardarPeticio("POST", "/", "client", cos));
+            assertFalse(peticio.getBoolean("jsonValid"));
+            assertEquals(cos, peticio.getString("cos"), "No s'ha de perdre cap part del cos.");
+        }
     }
 
     @Test
